@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({ client_id: clientId ?? 'anonymous', events: [{ name, params }] }),
     })
     return NextResponse.json({ success: true })
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 })
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Analytics request failed' }, { status: 500 })
   }
 }

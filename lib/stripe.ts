@@ -1,9 +1,20 @@
+import 'server-only'
+
 import Stripe from 'stripe'
 
-// Server-side Stripe client
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? 'sk_test_placeholder', {
-  apiVersion: '2026-06-24.dahlia',
-})
+let stripeClient: Stripe | undefined
+
+export function getStripe() {
+  const secretKey = process.env.STRIPE_SECRET_KEY
+  if (!secretKey) {
+    throw new Error('Stripe is not configured: STRIPE_SECRET_KEY is missing.')
+  }
+
+  stripeClient ??= new Stripe(secretKey, {
+    apiVersion: '2026-06-24.dahlia',
+  })
+  return stripeClient
+}
 
 // Card spending categories allowed
 export const ALLOWED_CATEGORIES = [
@@ -22,11 +33,16 @@ export interface CardholderData {
   state: string
   postalCode: string
   country: string
+  dateOfBirth: {
+    day: number
+    month: number
+    year: number
+  }
 }
 
 // Create a verified Stripe Issuing cardholder
 export async function createCardholder(data: CardholderData) {
-  return await stripe.issuing.cardholders.create({
+  return await getStripe().issuing.cardholders.create({
     name:   `${data.firstName} ${data.lastName}`,
     email:  data.email,
     phone_number: data.phone,
@@ -34,7 +50,7 @@ export async function createCardholder(data: CardholderData) {
     individual: {
       first_name: data.firstName,
       last_name:  data.lastName,
-      dob: { day: 1, month: 1, year: 1990 }, // from KYC in production
+      dob: data.dateOfBirth,
     },
     billing: {
       address: {
@@ -51,7 +67,7 @@ export async function createCardholder(data: CardholderData) {
 
 // Issue a virtual Visa card to a cardholder
 export async function issueVirtualCard(cardholderId: string, dailyLimit: number = 2500) {
-  return await stripe.issuing.cards.create({
+  return await getStripe().issuing.cards.create({
     cardholder:   cardholderId,
     currency:     'usd',
     type:         'virtual',
@@ -68,19 +84,19 @@ export async function issueVirtualCard(cardholderId: string, dailyLimit: number 
 
 // Get full card details including PAN (only available once)
 export async function getCardDetails(cardId: string) {
-  return await stripe.issuing.cards.retrieve(cardId, {
+  return await getStripe().issuing.cards.retrieve(cardId, {
     expand: ['number', 'cvc'],
   })
 }
 
 // Freeze or unfreeze a card
 export async function updateCardStatus(cardId: string, status: 'active' | 'inactive') {
-  return await stripe.issuing.cards.update(cardId, { status })
+  return await getStripe().issuing.cards.update(cardId, { status })
 }
 
 // Update spending limits
 export async function updateSpendingLimit(cardId: string, dailyLimit: number) {
-  return await stripe.issuing.cards.update(cardId, {
+  return await getStripe().issuing.cards.update(cardId, {
     spending_controls: {
       spending_limits: [
         { amount: dailyLimit * 100, interval: 'daily'  },
@@ -92,12 +108,12 @@ export async function updateSpendingLimit(cardId: string, dailyLimit: number) {
 
 // List transactions for a card
 export async function getCardTransactions(cardId: string) {
-  return await stripe.issuing.transactions.list({ card: cardId, limit: 50 })
+  return await getStripe().issuing.transactions.list({ card: cardId, limit: 50 })
 }
 
 // Create a payment intent for fiat on-ramp
 export async function createOnRampPaymentIntent(amountUsd: number, currency = 'usd') {
-  return await stripe.paymentIntents.create({
+  return await getStripe().paymentIntents.create({
     amount:   Math.round(amountUsd * 100),
     currency,
     automatic_payment_methods: { enabled: true },

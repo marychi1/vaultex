@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import Link from 'next/link'
 
 type Step = 'intro'|'personal'|'address'|'document'|'selfie'|'review'|'pending'|'approved'
 
@@ -30,10 +31,10 @@ export default function KYCPage() {
       <div style={{ maxWidth:520,margin:'0 auto' }}>
 
         {/* Logo */}
-        <a href="/" style={{ display:'flex',alignItems:'center',gap:8,textDecoration:'none',marginBottom:32 }}>
+        <Link href="/" style={{ display:'flex',alignItems:'center',gap:8,textDecoration:'none',marginBottom:32 }}>
           <div style={{ width:32,height:32,borderRadius:8,background:'linear-gradient(135deg,#0A1628,#1A0E3A)',border:'1px solid rgba(0,240,255,0.4)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:16 }}>🔐</div>
           <span style={{ fontFamily:'Syne,sans-serif',fontWeight:800,fontSize:18,letterSpacing:3,color:'#fff' }}>VAULT<span style={{color:'#00F0FF'}}>EX</span></span>
-        </a>
+        </Link>
 
         {/* Progress bar */}
         {step !== 'intro' && step !== 'pending' && step !== 'approved' && (
@@ -78,7 +79,7 @@ export default function KYCPage() {
             </div>
             <div style={{ background:'rgba(0,240,255,0.04)',border:'1px solid rgba(0,240,255,0.15)',borderRadius:10,padding:14,marginBottom:20 }}>
               <div style={{ fontSize:11,color:'#6A7D96',lineHeight:1.7 }}>
-                📋 <strong style={{color:'#E2EAF5'}}>What you'll need:</strong> Government-issued ID (passport, driver's license, or national ID) and a selfie. Takes about 3 minutes.
+                📋 <strong style={{color:'#E2EAF5'}}>What you&apos;ll need:</strong> Government-issued ID (passport, driver&apos;s license, or national ID) and a selfie. Takes about 3 minutes.
               </div>
             </div>
             <button onClick={()=>setStep('personal')} style={{ width:'100%',background:'#00F0FF',color:'#060A12',border:'none',borderRadius:12,padding:'16px',fontFamily:'Syne,sans-serif',fontSize:13,fontWeight:800,letterSpacing:'1px',cursor:'pointer' }}>
@@ -194,7 +195,7 @@ export default function KYCPage() {
             <div style={{ fontSize:64,marginBottom:20 }}>⏳</div>
             <div style={{ fontFamily:'Syne,sans-serif',fontWeight:800,fontSize:26,color:'#fff',marginBottom:10 }}>Under Review</div>
             <div style={{ fontSize:13,color:'#6A7D96',lineHeight:1.8,marginBottom:28,maxWidth:360,margin:'0 auto 28px' }}>
-              Your documents are being verified. This usually takes 2-5 minutes. We'll email you once approved.
+              Your documents are being verified. This usually takes 2-5 minutes. We&apos;ll email you once approved.
             </div>
             <div style={{ display:'flex',flexDirection:'column',gap:10,maxWidth:300,margin:'0 auto' }}>
               {['Documents received ✓','Identity check in progress...','Address verification pending','Final approval pending'].map((s,i)=>(
@@ -225,9 +226,9 @@ export default function KYCPage() {
                 </div>
               ))}
             </div>
-            <a href="/dashboard" style={{ display:'block',width:'100%',background:'#00F0FF',color:'#060A12',textDecoration:'none',borderRadius:12,padding:'16px',fontFamily:'Syne,sans-serif',fontSize:13,fontWeight:800,letterSpacing:'1px',textAlign:'center' }}>
+            <Link href="/dashboard" style={{ display:'block',width:'100%',background:'#00F0FF',color:'#060A12',textDecoration:'none',borderRadius:12,padding:'16px',fontFamily:'Syne,sans-serif',fontSize:13,fontWeight:800,letterSpacing:'1px',textAlign:'center' }}>
               GO TO DASHBOARD →
-            </a>
+            </Link>
           </div>
         )}
       </div>

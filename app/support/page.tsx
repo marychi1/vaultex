@@ -1,6 +1,7 @@
 'use client'
 'use client'
 import { useState } from 'react'
+import Link from 'next/link'
 
 const FAQS = [
   { q:'How do I connect my wallet?', a:'Click "Connect Wallet" in the top navigation. We support MetaMask, Coinbase Wallet, Rainbow, Trust Wallet, and 20+ others via WalletConnect.' },
@@ -34,7 +35,7 @@ export default function SupportPage() {
   return (
     <div style={{ minHeight:'100vh',background:'#060A12',padding:'40px 24px' }}>
       <div style={{ maxWidth:800,margin:'0 auto' }}>
-        <a href="/" style={{ fontFamily:'Syne,sans-serif',fontWeight:800,fontSize:18,letterSpacing:3,color:'#fff',textDecoration:'none',display:'block',marginBottom:10 }}>VAULT<span style={{color:'#00F0FF'}}>EX</span></a>
+        <Link href="/" style={{ fontFamily:'Syne,sans-serif',fontWeight:800,fontSize:18,letterSpacing:3,color:'#fff',textDecoration:'none',display:'block',marginBottom:10 }}>VAULT<span style={{color:'#00F0FF'}}>EX</span></Link>
         <div style={{ fontSize:11,color:'#6A7D96',marginBottom:40 }}>Support Center</div>
 
         <h1 style={{ fontFamily:'Syne,sans-serif',fontWeight:800,fontSize:32,color:'#fff',marginBottom:8 }}>How can we help?</h1>
@@ -80,7 +81,7 @@ export default function SupportPage() {
             <div style={{ textAlign:'center',padding:24 }}>
               <div style={{ fontSize:40,marginBottom:12 }}>✅</div>
               <div style={{ fontFamily:'Syne,sans-serif',fontWeight:800,fontSize:16,color:'#fff',marginBottom:6 }}>Ticket Submitted!</div>
-              <div style={{ fontSize:12,color:'#6A7D96' }}>We'll reply to {ticket.email} within 2-4 hours.</div>
+              <div style={{ fontSize:12,color:'#6A7D96' }}>We&apos;ll reply to {ticket.email} within 2-4 hours.</div>
             </div>
           ) : (
             <>
