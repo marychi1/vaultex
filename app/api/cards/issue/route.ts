@@ -37,8 +37,8 @@ export async function POST(req: NextRequest) {
     })
 
     return NextResponse.json({ success: true, card: { id: card.id, last4: card.last4, expiry_month: card.exp_month, expiry_year: card.exp_year, network: 'visa', status: 'active' } })
-  } catch (e: any) {
-    console.error('issue card:', e)
-    return NextResponse.json({ error: e.message ?? 'Card issuance failed' }, { status: 500 })
+  } catch (error) {
+    console.error('issue card:', error)
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Card issuance failed' }, { status: 500 })
   }
 }

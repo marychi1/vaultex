@@ -2,12 +2,12 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'VAULTEX — Your Digital Wealth, One Smart Wallet',
-  description: 'Store, swap, and spend crypto & digital assets. Non-custodial smart wallets, virtual debit cards, DeFi yields.',
+  title: 'VAULTEX',
+  description: 'Manage your digital assets. Early access.',
   keywords: 'crypto wallet, DeFi, token swap, virtual card, Bitcoin, Ethereum',
   manifest: '/manifest.json',
   appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'VAULTEX' },
-  openGraph: { title: 'VAULTEX', description: 'Your Digital Wealth, One Smart Wallet', type: 'website' },
+  openGraph: { title: 'VAULTEX', description: 'Manage your digital assets. Early access.', type: 'website' },
 }
 
 export const viewport: Viewport = {

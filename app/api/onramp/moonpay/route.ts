@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ url: `${base}&signature=${encodeURIComponent(sig)}` })
     }
     return NextResponse.json({ url: base })
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 })
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Onramp request failed' }, { status: 500 })
   }
 }

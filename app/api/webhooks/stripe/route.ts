@@ -9,8 +9,9 @@ export async function POST(req: NextRequest) {
   let event
   try {
     event = webhookSecret ? stripe.webhooks.constructEvent(body, sig, webhookSecret) : JSON.parse(body)
-  } catch (e: any) {
-    return NextResponse.json({ error: `Webhook error: ${e.message}` }, { status: 400 })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Invalid webhook payload'
+    return NextResponse.json({ error: `Webhook error: ${message}` }, { status: 400 })
   }
   switch (event.type) {
     case 'issuing_transaction.created': {

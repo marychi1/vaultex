@@ -1,10 +1,12 @@
+import Link from 'next/link'
+
 export const metadata = { title: 'Cookie Policy — VAULTEX' }
 export default function Cookies() {
   return (
     <div style={{ minHeight:'100vh',background:'#060A12',padding:'60px 24px' }}>
       <div style={{ maxWidth:720,margin:'0 auto' }}>
-        <a href="/" style={{ fontFamily:'Syne,sans-serif',fontWeight:800,fontSize:18,letterSpacing:3,color:'#fff',textDecoration:'none',display:'block',marginBottom:10 }}>VAULT<span style={{color:'#00F0FF'}}>EX</span></a>
-        <a href="/legal" style={{ fontSize:11,color:'#6A7D96',textDecoration:'none',display:'block',marginBottom:32 }}>← Back to Legal</a>
+        <Link href="/" style={{ fontFamily:'Syne,sans-serif',fontWeight:800,fontSize:18,letterSpacing:3,color:'#fff',textDecoration:'none',display:'block',marginBottom:10 }}>VAULT<span style={{color:'#00F0FF'}}>EX</span></Link>
+        <Link href="/legal" style={{ fontSize:11,color:'#6A7D96',textDecoration:'none',display:'block',marginBottom:32 }}>← Back to Legal</Link>
         <h1 style={{ fontFamily:'Syne,sans-serif',fontWeight:800,fontSize:32,color:'#fff',marginBottom:6 }}>Cookie Policy</h1>
         <p style={{ color:'#6A7D96',marginBottom:32,fontSize:12 }}>Last updated: January 1, 2025</p>
         <div style={{ color:'#8A9CB5',lineHeight:1.9,fontSize:13 }}>

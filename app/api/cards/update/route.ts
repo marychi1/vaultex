@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     if (action === 'unfreeze') await updateCardStatus(cardId, 'active')
     if (action === 'limit')    await updateSpendingLimit(cardId, value)
     return NextResponse.json({ success: true })
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 })
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Card update failed' }, { status: 500 })
   }
 }

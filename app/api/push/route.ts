@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
       await db.from('push_subscriptions').upsert({ wallet_address: walletAddress.toLowerCase(), subscription: JSON.stringify(subscription), updated_at: new Date().toISOString() }, { onConflict: 'wallet_address' })
     }
     return NextResponse.json({ success: true })
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 })
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Push subscription request failed' }, { status: 500 })
   }
 }

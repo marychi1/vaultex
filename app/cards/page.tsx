@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import Link from 'next/link'
 
 type Screen = 'list'|'apply'|'issued'|'manage'
 
@@ -52,8 +53,8 @@ export default function CardsPage() {
 
         {/* Header */}
         <div style={{ display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:32 }}>
-          <a href="/" style={{ fontFamily:'Syne,sans-serif',fontWeight:800,fontSize:18,letterSpacing:3,color:'#fff',textDecoration:'none' }}>VAULT<span style={{color:'#00F0FF'}}>EX</span></a>
-          <a href="/dashboard" style={{ fontSize:11,color:'#6A7D96',textDecoration:'none' }}>← Dashboard</a>
+          <Link href="/" style={{ fontFamily:'Syne,sans-serif',fontWeight:800,fontSize:18,letterSpacing:3,color:'#fff',textDecoration:'none' }}>VAULT<span style={{color:'#00F0FF'}}>EX</span></Link>
+          <Link href="/dashboard" style={{ fontSize:11,color:'#6A7D96',textDecoration:'none' }}>← Dashboard</Link>
         </div>
 
         {/* LIST SCREEN */}
