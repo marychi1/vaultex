@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { getSessionClient } from "@/lib/supabase/server";
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardPage() {
   const supabase = await getSessionClient();
   const {
