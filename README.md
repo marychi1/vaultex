@@ -12,8 +12,8 @@ demo UI does not imply that a financial service is operational.
 - Buy Crypto is a coming-soon placeholder.
 - Wallet creation, swaps, yield products, and identity verification are not
   implemented as production services.
-- Card issuance contains demo behavior and is not ready for real customers or
-  funds.
+- Card issuance and management are disabled until identity verification,
+  account ownership controls, and card-program approval are implemented.
 - Support chat and ticket submission are UI-only and do not send requests to a
   support system.
 
@@ -48,6 +48,13 @@ Without these values, sign-in and the protected dashboard are unavailable.
 Never commit `.env.local`, production credentials, or a Supabase service-role
 key. Keep `SUPABASE_SERVICE_ROLE_KEY` server-side and use it only for a
 server-authorized operation.
+
+For an existing Supabase project, review and apply
+[`supabase-security-migration.sql`](./supabase-security-migration.sql) before
+deploying. It replaces the prior permissive card/push-subscription policies
+with user-scoped access. Existing rows are left unowned and remain inaccessible
+until an administrator verifies their owner; do not bulk-assign them based on
+wallet addresses supplied by clients.
 
 ## Optional integrations
 

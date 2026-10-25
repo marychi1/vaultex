@@ -1,7 +1,9 @@
--- Run in Supabase SQL Editor to add card tables
+-- Run in the Supabase SQL Editor for a new installation.
+-- Existing installations should run supabase-security-migration.sql instead.
 
 create table if not exists public.issued_cards (
   id                    uuid default gen_random_uuid() primary key,
+  owner_user_id         uuid not null references auth.users(id) on delete cascade,
   wallet_address        text not null,
   stripe_cardholder_id  text not null,
   stripe_card_id        text not null unique,
@@ -19,18 +21,26 @@ create table if not exists public.issued_cards (
 
 create table if not exists public.push_subscriptions (
   id             uuid default gen_random_uuid() primary key,
-  wallet_address text unique not null,
+  owner_user_id  uuid not null unique references auth.users(id) on delete cascade,
+  wallet_address text unique,
   subscription   text not null,
   updated_at     timestamptz default now()
 );
 
-create index if not exists idx_cards_wallet on public.issued_cards(wallet_address);
+create index if not exists idx_cards_owner_user on public.issued_cards(owner_user_id);
 
-alter table public.issued_cards       enable row level security;
+alter table public.issued_cards enable row level security;
 alter table public.push_subscriptions enable row level security;
 
-create policy "Users manage own cards" on public.issued_cards
-  for all using (true) with check (true);
+drop policy if exists "Users manage own cards" on public.issued_cards;
+drop policy if exists "Users manage own push" on public.push_subscriptions;
+drop policy if exists "Users read own cards" on public.issued_cards;
+drop policy if exists "Users manage own push subscription" on public.push_subscriptions;
 
-create policy "Users manage own push" on public.push_subscriptions
-  for all using (true) with check (true);
+create policy "Users read own cards" on public.issued_cards
+  for select to authenticated using (owner_user_id = (select auth.uid()));
+
+create policy "Users manage own push subscription" on public.push_subscriptions
+  for all to authenticated
+  using (owner_user_id = (select auth.uid()))
+  with check (owner_user_id = (select auth.uid()));
