@@ -1,36 +1,79 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# VAULTEX
 
-## Getting Started
+VAULTEX is an early-stage Next.js App Router application for digital-asset
+services. The current application includes Supabase email-link sign-in, legal
+and support pages, and UI prototypes for several planned services. A page or
+demo UI does not imply that a financial service is operational.
 
-First, run the development server:
+## Current status
 
-```bash
+- Email-link sign-in and the protected dashboard require a configured Supabase
+  project.
+- Buy Crypto is a coming-soon placeholder.
+- Wallet creation, swaps, yield products, and identity verification are not
+  implemented as production services.
+- Card issuance contains demo behavior and is not ready for real customers or
+  funds.
+- Support chat and ticket submission are UI-only and do not send requests to a
+  support system.
+
+Do not use this application to handle real customer funds or sensitive identity
+documents until the relevant integrations, authorization, data policies, and
+compliance controls have been implemented and independently verified.
+
+## Requirements
+
+- Node.js 22 (or a supported Node.js release compatible with the installed
+  Next.js version)
+- npm
+- A Supabase project for authentication
+
+## Local development
+
+```powershell
+git clone https://github.com/marychi1/vaultex.git
+cd vaultex
+npm ci
+Copy-Item .env.example .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in
+`.env.local` to enable email sign-in. Configure the Supabase authentication
+provider and redirect URL to include `http://localhost:3000/auth/callback`.
+Without these values, sign-in and the protected dashboard are unavailable.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Never commit `.env.local`, production credentials, or a Supabase service-role
+key. Keep `SUPABASE_SERVICE_ROLE_KEY` server-side and use it only for a
+server-authorized operation.
 
-## Learn More
+## Optional integrations
 
-To learn more about Next.js, take a look at the following resources:
+See [.env.example](./.env.example) for the environment variable names currently
+read by the application. Stripe, MoonPay, and Google Analytics values are
+optional for local development. Configuring their credentials alone does not
+make the related user flows production-ready; review the current-status notes
+and complete the required API authorization, provider setup, data policies,
+failure handling, and end-to-end tests first.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Checks
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```powershell
+npm run lint
+npm run typecheck
+npm run build
+```
 
-## Deploy on Vercel
+Pull requests run the same checks in GitHub Actions. The `main` branch is
+protected by a repository ruleset that requires pull requests and the CI
+quality-check job.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Deployment
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Deploy only after the required integrations, secrets, Supabase schema and
+row-level security policies, provider webhooks, and production environment
+variables have been reviewed. Configure the deployed application's Supabase
+authentication redirect URLs to match the production domain. The current app
+is not a production-ready financial product.
