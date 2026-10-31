@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase/client";
 
 export default function LoginForm({
@@ -8,7 +9,9 @@ export default function LoginForm({
 }: {
   callbackFailed: boolean;
 }) {
+  const router = useRouter();
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [msg, setMsg] = useState(
     callbackFailed
       ? "We couldn't sign you in. Please request a new sign-in link."
@@ -39,6 +42,33 @@ export default function LoginForm({
     }
   }
 
+  async function signInPassword(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setMsg("");
+    setIsSubmitting(true);
+
+    try {
+      const { error } = await supabaseBrowser().auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        setMsg(error.message);
+      } else {
+        router.push("/dashboard");
+      }
+    } catch (error) {
+      setMsg(
+        error instanceof Error
+          ? error.message
+          : "Unable to sign in. Please try again."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
     <main style={{ padding: 24, maxWidth: 360 }}>
       <h1>Sign in to Vaultex</h1>
@@ -53,6 +83,28 @@ export default function LoginForm({
         />
         <button type="submit" disabled={isSubmitting}>
           {isSubmitting ? "Sending..." : "Send link"}
+        </button>
+      </form>
+      <hr style={{ margin: "16px 0" }} />
+      <form onSubmit={signInPassword}>
+        <input
+          type="email"
+          required
+          autoComplete="username"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="email"
+        />
+        <input
+          type="password"
+          required
+          autoComplete="current-password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="password"
+        />
+        <button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Signing in..." : "Sign in with password"}
         </button>
       </form>
       <p role="status" aria-live="polite">{msg}</p>

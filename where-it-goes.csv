@@ -1,0 +1,6 @@
+Starts with,Where it goes,Example
+"create, select, insert, update, alter, revoke, do $$",Supabase SQL Editor,create table public.transfer_requests
+"""use client"", import, export, async function, const, <form>",VS Code (inside a project file),app/login/page.tsx
+"Lines like PAYMENTS_ENABLED=false",VS Code (.env.local file),PAYMENTS_ENABLED=false
+"npm run dev, npm install",Terminal (in the project folder),npm run dev
+"const key = crypto.randomUUID()...",Browser console (F12 on localhost:3000/dashboard),Transfer test script

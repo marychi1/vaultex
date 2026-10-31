@@ -9,6 +9,11 @@ demo UI does not imply that a financial service is operational.
 
 - Email-link sign-in and the protected dashboard require a configured Supabase
   project.
+- The dashboard includes a testnet-only UniSat connection preview. It reads
+  the public account address and testnet BTC balance; it does not sign
+  messages, send transactions, or persist wallet details. It clears the
+  displayed wallet data when the connected account changes or the wallet
+  leaves testnet.
 - Buy Crypto is a coming-soon placeholder.
 - Wallet creation, swaps, yield products, and identity verification are not
   implemented as production services.

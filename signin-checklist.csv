@@ -1,0 +1,9 @@
+Step,Action,Where,Done
+1,Open app/login/login-form.tsx,VS Code,
+2,"Add the client login forms there; keep app/login/page.tsx as the server wrapper",VS Code,
+3,Save the file (Ctrl+S or Cmd+S),VS Code,
+4,Run npm run dev if the server is not already running,Terminal,
+5,Open http://localhost:3000/login and confirm two forms appear,Browser,
+6,"Add a user: Authentication > Users > Add user > Create new user (tick Auto Confirm User)",Supabase dashboard,
+7,Sign in with the password form,Browser,
+8,Confirm you land on /dashboard,Browser,
