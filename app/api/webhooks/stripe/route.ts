@@ -59,19 +59,35 @@ export async function POST(req: NextRequest) {
         )
       }
 
+      const currency = tx.currency.toUpperCase()
+      const currencyDigits = new Intl.NumberFormat('en', {
+        style: 'currency',
+        currency,
+      }).resolvedOptions().maximumFractionDigits
+      if (currencyDigits === undefined) {
+        console.error('Unable to determine Stripe transaction currency precision:', tx.currency)
+        return NextResponse.json(
+          { error: 'Unable to process Stripe transaction currency' },
+          { status: 503 }
+        )
+      }
+      const amount = Math.abs(tx.amount) / 10 ** currencyDigits
+
       try {
         await saveTransaction({
           user_id: userId,
           type: 'card_spend',
-          from_token: 'USDC',
+          from_token: currency,
           to_token: null,
-          from_amount: Math.abs(tx.amount) / 100,
+          from_amount: amount,
           to_amount: null,
-          usd_value: Math.abs(tx.amount) / 100,
+          usd_value: currency === 'USD' ? amount : null,
           tx_hash: tx.id,
+          provider_event_id: event.id,
+          merchant_name: tx.merchant_data.name,
           status: 'confirmed',
           chain: 'stripe',
-          fee_usd: 0,
+          fee_usd: null,
         })
       } catch (error) {
         console.error('Stripe transaction persistence failed:', error)

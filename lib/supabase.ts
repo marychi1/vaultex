@@ -9,18 +9,21 @@ export const adminDb  = url && svc  ? createClient(url, svc)  : null
 
 export interface Transaction {
   id: string
+  reference: string
   user_id: string
   type: 'swap'|'send'|'receive'|'earn'|'card_spend'
   from_token: string
   to_token: string|null
   from_amount: number
   to_amount: number|null
-  usd_value: number
+  usd_value: number|null
   tx_hash: string|null
+  provider_event_id: string|null
+  merchant_name: string|null
   status: 'pending'|'confirmed'|'failed'
   created_at: string
   chain: string
-  fee_usd: number
+  fee_usd: number|null
 }
 
 export interface IssuedCard {
@@ -41,11 +44,15 @@ export interface IssuedCard {
   created_at: string
 }
 
-export async function saveTransaction(tx: Omit<Transaction,'id'|'created_at'>) {
+export async function saveTransaction(tx: Omit<Transaction,'id'|'created_at'|'reference'>) {
   if (!adminDb) {
     throw new Error('Supabase writes require SUPABASE_SERVICE_ROLE_KEY.')
   }
-  const { data, error } = await adminDb.from('transactions').insert(tx).select().single()
+  const { data, error } = await adminDb
+    .from('transactions')
+    .upsert(tx, { onConflict: 'provider_event_id', ignoreDuplicates: true })
+    .select()
+    .maybeSingle()
   if (error) throw new Error(`saveTransaction failed: ${error.message}`)
   return data
 }

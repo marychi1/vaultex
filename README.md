@@ -14,6 +14,10 @@ demo UI does not imply that a financial service is operational.
   implemented as production services.
 - Card issuance and management are disabled until identity verification,
   account ownership controls, and card-program approval are implemented.
+- The dashboard can display provider-recorded transaction rows and individual
+  receipts after the transaction schema migration is applied. The current Stripe
+  webhook writes card activity only; Column wires and bank delivery are not
+  connected to this customer app.
 - Support chat and ticket submission are UI-only and do not send requests to a
   support system.
 
@@ -55,6 +59,12 @@ deploying. It replaces the prior permissive card/push-subscription policies
 with user-scoped access. Existing rows are left unowned and remain inaccessible
 until an administrator verifies their owner; do not bulk-assign them based on
 wallet addresses supplied by clients.
+
+Before deploying customer transaction history, apply
+[`supabase-transactions-migration.sql`](./supabase-transactions-migration.sql).
+It scopes reads to the authenticated owner, blocks direct client writes, and
+adds unique provider-event IDs for webhook idempotency. Provider webhooks must
+use the server-side service-role key.
 
 ## Optional integrations
 
