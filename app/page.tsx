@@ -1,87 +1,13 @@
-'use client'
-
-import { useState } from 'react'
 import Link from 'next/link'
 
-const NAV = [
-  ['Buy Crypto', '/onramp'],
-  ['Cards', '/cards'],
-  ['KYC', '/kyc'],
+const LINKS = [
+  ['Bank wires', '/wire-transfers'],
   ['Support', '/support'],
   ['Legal', '/legal'],
   ['Dashboard', '/dashboard'],
 ]
 
-const FEATURES = [
-  {
-    name: 'Smart Wallet',
-    desc: 'Create and manage a wallet for your digital assets.',
-    status: 'Coming soon',
-  },
-  {
-    name: 'Token Swap',
-    desc: 'Swap 200+ tokens and find competitive rates.',
-    status: 'Explore',
-    href: '/dashboard',
-  },
-  {
-    name: 'Virtual Cards',
-    desc: 'Spend crypto anywhere with a virtual card.',
-    status: 'Explore',
-    href: '/cards',
-  },
-  {
-    name: 'DeFi Yields',
-    desc: 'Explore yield strategies from your dashboard.',
-    status: 'Explore',
-    href: '/dashboard',
-  },
-  {
-    name: 'Buy Crypto',
-    desc: 'Purchase crypto using card, bank, or Apple Pay.',
-    status: 'Explore',
-    href: '/onramp',
-  },
-  {
-    name: 'KYC Verification',
-    desc: 'Complete identity verification to access services.',
-    status: 'Explore',
-    href: '/kyc',
-  },
-]
-
-const STATS = [
-  ['$4.2B+', 'Assets Managed'],
-  ['2.1M+', 'Active Users'],
-  ['150+', 'Countries'],
-  ['40+', 'Blockchains'],
-]
-
-const FOOTER_LINKS = [
-  ['Terms', '/legal/terms'],
-  ['Privacy', '/legal/privacy'],
-  ['AML Policy', '/legal/aml'],
-  ['Cookies', '/legal/cookies'],
-  ['Support', '/support'],
-  ['Legal', '/legal'],
-]
-
 export default function Home() {
-  const [notifShown, setNotifShown] = useState(false)
-
-  const requestNotifs = async () => {
-    if ('Notification' in window) {
-      const permission = await Notification.requestPermission()
-      if (permission === 'granted') {
-        setNotifShown(true)
-        new Notification('VAULTEX', {
-          body: 'Push notifications enabled! 🎉',
-          icon: '/icons/icon.svg',
-        })
-      }
-    }
-  }
-
   return (
     <main className="page">
       <header className="nav">
@@ -89,105 +15,53 @@ export default function Home() {
           VAULT<span>EX</span>
         </Link>
         <nav aria-label="Main navigation">
-          {NAV.map(([label, href]) => (
-            <a key={label} href={href}>
-              {label}
-            </a>
+          {LINKS.map(([label, href]) => (
+            <Link key={label} href={href}>{label}</Link>
           ))}
         </nav>
       </header>
 
       <section className="hero">
-        <p className="eyebrow">Your digital assets, in one place</p>
-        <h1>Manage your digital wealth with confidence.</h1>
+        <p className="eyebrow">Bank wire transfers</p>
+        <h1>Focused on domestic and international bank wires.</h1>
         <p>
-          Explore crypto services, virtual cards, and tools for managing your
-          digital assets from a single platform.
+          VAULTEX is being narrowed to bank transfers only. The customer app is not yet
+          connected to a live, customer-authorized wire workflow. Do not use it to initiate
+          or rely on a transfer.
         </p>
+        <p>Crypto, wallets, cards, and blockchain services are not offered.</p>
         <div className="actions">
-          <a className="cta" href="/dashboard">
-            OPEN DASHBOARD
-          </a>
-          <a className="secondary" href="/onramp">
-            BUY CRYPTO
-          </a>
-          <button
-            className="secondary notification-button"
-            type="button"
-            onClick={requestNotifs}
-          >
-            {notifShown ? '🔔 ENABLED' : '🔔 NOTIFICATIONS'}
-          </button>
-        </div>
-
-        <div className="stats" aria-label="Platform statistics">
-          {STATS.map(([value, label]) => (
-            <div className="stat" key={label}>
-              <strong>{value}</strong>
-              <span>{label}</span>
-            </div>
-          ))}
+          <Link className="cta" href="/wire-transfers">VIEW SERVICE STATUS</Link>
+          <Link className="secondary" href="/support">SUPPORT</Link>
         </div>
       </section>
 
-      <section className="section" aria-labelledby="features-heading">
-        <div className="section-heading">
-          <p className="eyebrow">Explore VAULTEX</p>
-          <h2 id="features-heading">Tools for your digital assets</h2>
-        </div>
-        <div className="grid">
-          {FEATURES.map((feature, index) => {
-            const content = (
-              <>
-                <span className="badge" aria-hidden="true">
-                  {String(index + 1).padStart(2, '0')}
-                </span>
-                <h3>{feature.name}</h3>
-                <p>{feature.desc}</p>
-                <span className="tag">{feature.status}</span>
-              </>
-            )
-
-            return feature.href ? (
-              <a className="card feature-card" href={feature.href} key={feature.name}>
-                {content}
-              </a>
-            ) : (
-              <article className="card feature-card" key={feature.name}>
-                {content}
-              </article>
-            )
-          })}
-        </div>
-      </section>
-
-      <section className="section install-section">
-        <div className="install-card">
-          <div>
-            <h2>Install the VAULTEX app</h2>
-            <p>
-              Add VAULTEX to your home screen for quick access. No app store
-              needed.
-            </p>
-          </div>
-          <a className="cta" href="/manifest.json">
-            INSTALL APP
-          </a>
-        </div>
+      <section className="section grid" aria-label="Wire service status">
+        <article className="card feature-card">
+          <span className="badge" aria-hidden="true">01</span>
+          <h2>Domestic wires</h2>
+          <p>Not enabled in this customer app. No transfer can be sent from here.</p>
+          <span className="tag">Unavailable</span>
+        </article>
+        <article className="card feature-card">
+          <span className="badge" aria-hidden="true">02</span>
+          <h2>International wires</h2>
+          <p>
+            Availability, countries, currencies, required beneficiary details, fees, and
+            delivery times still need confirmation from Column.
+          </p>
+          <span className="tag">Not confirmed</span>
+        </article>
       </section>
 
       <footer className="footer">
         <div className="footer-links">
-          {FOOTER_LINKS.map(([label, href]) => (
-            <a key={label} href={href}>
-              {label}
-            </a>
-          ))}
+          <Link href="/legal/terms">Terms</Link>
+          <Link href="/legal/privacy">Privacy</Link>
+          <Link href="/legal/aml">AML/KYC</Link>
+          <Link href="/support">Support</Link>
         </div>
-        <p>
-          © 2025 VAULTEX Inc. · Singapore · Not financial advice · Crypto
-          carries risk
-        </p>
+        <p>VAULTEX is not currently offering live bank-wire transfers through this application.</p>
       </footer>
     </main>
   )

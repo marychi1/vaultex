@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { getSessionClient } from "@/lib/supabase/server";
-import WalletAddressQr from "@/components/WalletAddressQr";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +15,14 @@ export default async function DashboardPage() {
     <main style={{ padding: 24 }}>
       <h1>Dashboard</h1>
       <p>Signed in as {user.email}</p>
-      <WalletAddressQr />
+      <section aria-labelledby="wire-status">
+        <h2 id="wire-status">Bank wires are not available yet</h2>
+        <p>
+          This customer app is not connected to an authenticated wire-transfer service.
+          No wire can be initiated or tracked here.
+        </p>
+        <a href="/wire-transfers">View wire service status</a>
+      </section>
     </main>
   );
 }

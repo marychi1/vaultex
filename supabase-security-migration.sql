@@ -1,6 +1,5 @@
--- Apply in Supabase SQL Editor before deploying the owner-scoped push API.
--- Legacy records remain unowned and are intentionally inaccessible until
--- an administrator verifies and assigns each record to its actual user.
+-- Historical security migration for previously-created card/push tables.
+-- It is not required for the current bank-wire-only app. It does not delete rows.
 
 create table if not exists public.issued_cards (
   id                    uuid default gen_random_uuid() primary key,

@@ -44,3 +44,5 @@ create policy "Users manage own push subscription" on public.push_subscriptions
   for all to authenticated
   using (owner_user_id = (select auth.uid()))
   with check (owner_user_id = (select auth.uid()));
+-- Legacy card/push schema only. Do not apply for the bank-wire-only product.
+-- Existing rows are not removed by this notice or by the product conversion.
