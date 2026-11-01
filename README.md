@@ -1,12 +1,13 @@
 # VAULTEX customer app
 
-VAULTEX provides bank-wire service information and a separate FedEx parcel-shipping workspace. Shipping is not part of the bank-wire workflow. This app is not connected to an authenticated Column wire workflow; no bank transfer can be initiated or tracked here.
+VAULTEX provides bank-wire service information and a separate FedEx parcel-shipping workspace. Shipping is not part of the bank-wire workflow. The app can link a confirmed Supabase customer login to an existing backend account, but no bank transfer can be initiated or tracked here.
 
 Crypto, wallets, blockchain features, cards, and onramps are not offered. Old data/schema is not automatically deleted as part of this UI conversion.
 
 ## Current limitations
 
-- The customer app uses Supabase email-link authentication; it is not integrated with the separate Vaultexw backend identity.
+- Account linking requires a confirmed Supabase email, the existing backend phone number and PIN, and a one-time phone code. The backend verifies the Supabase access token and stores a unique mapping in PostgreSQL.
+- Set the server-only `VAULTEX_BACKEND_URL` to the staging backend to test account linking. Configure the backend with `SUPABASE_URL`, `SUPABASE_ANON_KEY`, PostgreSQL, and a phone OTP provider before testing; do not use production identity data for sandbox tests.
 - FedEx shipping supports US domestic rate quotes, single-package labels, and tracking lookups. Sandbox is the default; production API access and billable labels are separately gated.
 - FedEx sandbox credentials must be stored as server-side environment variables. Never use a `NEXT_PUBLIC_` prefix for FedEx credentials or commit them to the repository.
 - The backend currently models USD wires. International countries, currencies, beneficiary requirements, fees, FX, and delivery times have not been confirmed with Column.
@@ -26,9 +27,10 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in
-`.env.local` only when testing email-link authentication. Never commit
-`.env.local`, production credentials, or a Supabase service-role key.
+Set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and
+`VAULTEX_BACKEND_URL` in `.env.local` only when testing account linking. Keep
+`VAULTEX_BACKEND_URL` server-side; never add a `NEXT_PUBLIC_` prefix. Never
+commit `.env.local`, production credentials, or a Supabase service-role key.
 
 To test the separate FedEx workspace, set `FEDEX_ENV=sandbox`,
 `FEDEX_API_KEY`, `FEDEX_SECRET_KEY`, and `FEDEX_ACCOUNT_NUMBER` in the
@@ -62,4 +64,4 @@ npm run typecheck
 npm run build
 ```
 
-Do not deploy as a functioning wire-transfer product until Column capabilities and the authenticated customer-to-backend identity design are confirmed, tested, and reviewed. Existing database records are intentionally not deleted or reclassified by this UI change. FedEx shipping is separate and does not enable bank wires. Keep the production flags disabled until production credentials, the shipment ledger, and authorized-user controls have been independently verified.
+Account linking does not enable wire submissions. Do not deploy as a functioning wire-transfer product until Column sandbox access, account and counterparty ownership checks, supported rail, limits, and end-to-end testing are confirmed and reviewed. This app uses Column's API integration path, not a direct Fedwire connection. Existing database records are intentionally not deleted or reclassified by this UI change. FedEx shipping is separate and does not enable bank wires. Keep production flags disabled.

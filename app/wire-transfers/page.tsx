@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import LinkAccountForm from './link-account-form'
 
 export default function WireTransfersPage() {
   return (
@@ -12,16 +13,16 @@ export default function WireTransfersPage() {
       </header>
       <section className="hero">
         <p className="eyebrow">Bank wire service</p>
-        <h1>Transfers are not enabled.</h1>
+        <h1>Link your existing account.</h1>
         <p>
-          This customer app is not connected to the bank-wire backend or a verified customer
-          identity. Do not submit payment instructions here. No wire can be initiated or
-          tracked in this app.
+          Verify your existing bank-wire account using your confirmed customer login,
+          phone code, and backend PIN. Account linking does not initiate a transfer.
         </p>
+        <LinkAccountForm />
         <p>
-          The current backend is USD-only. International wire availability, supported
-          countries and currencies, beneficiary requirements, fees, and delivery times
-          must be confirmed with Column before they can be offered.
+          Wire initiation remains unavailable until the Column sandbox endpoint, account
+          ownership, counterparties, supported rail, and limits are confirmed and tested.
+          This integration does not directly connect to Fedwire.
         </p>
         <Link className="secondary" href="/support">Support</Link>
       </section>
