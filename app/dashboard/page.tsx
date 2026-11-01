@@ -12,7 +12,7 @@ export default async function DashboardPage() {
   if (!user) redirect("/login");
 
   return (
-    <main style={{ padding: 24 }}>
+    <main className="page dashboard-page">
       <h1>Dashboard</h1>
       <p>Signed in as {user.email}</p>
       <section aria-labelledby="wire-status">
