@@ -1,11 +1,17 @@
 import { getSessionClient } from "@/lib/supabase/server";
 
-const FEDEX_SANDBOX_URL = "https://apis-sandbox.fedex.com";
+const FEDEX_URLS = {
+  sandbox: "https://apis-sandbox.fedex.com",
+  production: "https://apis.fedex.com",
+} as const;
 
 export class FedExConfigurationError extends Error {}
 export class FedExInputError extends Error {}
+export class FedExLabelConflictError extends Error {}
 
 type FedExConfig = {
+  mode: "sandbox" | "production";
+  baseUrl: string;
   apiKey: string;
   secretKey: string;
   accountNumber: string;
@@ -35,13 +41,20 @@ export type ParsedShipment = {
   };
 };
 
-let cachedToken: { value: string; expiresAt: number } | undefined;
+let cachedToken: { value: string; expiresAt: number; key: string } | undefined;
 let tokenRequest: Promise<string> | undefined;
 
+export function getFedExMode(): "sandbox" | "production" {
+  const mode = process.env.FEDEX_ENV;
+  if (mode === "sandbox" || mode === "production") return mode;
+  throw new FedExConfigurationError("Set FEDEX_ENV to sandbox or production.");
+}
+
 function getFedExConfig(): FedExConfig {
-  if (process.env.FEDEX_ENV !== "sandbox") {
+  const mode = getFedExMode();
+  if (mode === "production" && process.env.FEDEX_PRODUCTION_ENABLED !== "true") {
     throw new FedExConfigurationError(
-      "FedEx is restricted to sandbox mode. Set FEDEX_ENV=sandbox."
+      "FedEx production access is disabled. Set FEDEX_PRODUCTION_ENABLED=true only after production readiness checks."
     );
   }
 
@@ -51,11 +64,17 @@ function getFedExConfig(): FedExConfig {
 
   if (!apiKey || !secretKey || !accountNumber) {
     throw new FedExConfigurationError(
-      "FedEx sandbox credentials and account number are not configured."
+      `FedEx ${mode} credentials and account number are not configured.`
     );
   }
 
-  return { apiKey, secretKey, accountNumber };
+  return {
+    mode,
+    baseUrl: FEDEX_URLS[mode],
+    apiKey,
+    secretKey,
+    accountNumber,
+  };
 }
 
 function asRecord(value: unknown): Record<string, unknown> | undefined {
@@ -74,7 +93,12 @@ function stringValue(value: unknown): string | undefined {
 }
 
 async function getAccessToken(config: FedExConfig): Promise<string> {
-  if (cachedToken && cachedToken.expiresAt > Date.now() + 60_000) {
+  const cacheKey = `${config.baseUrl}:${config.apiKey}`;
+  if (
+    cachedToken &&
+    cachedToken.key === cacheKey &&
+    cachedToken.expiresAt > Date.now() + 60_000
+  ) {
     return cachedToken.value;
   }
   if (tokenRequest) return tokenRequest;
@@ -85,7 +109,7 @@ async function getAccessToken(config: FedExConfig): Promise<string> {
       client_id: config.apiKey,
       client_secret: config.secretKey,
     });
-    const response = await fetch(`${FEDEX_SANDBOX_URL}/oauth/token`, {
+    const response = await fetch(`${config.baseUrl}/oauth/token`, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body,
@@ -103,6 +127,7 @@ async function getAccessToken(config: FedExConfig): Promise<string> {
     cachedToken = {
       value: token,
       expiresAt: Date.now() + expiresIn * 1000,
+      key: cacheKey,
     };
     return token;
   })();
@@ -117,7 +142,7 @@ async function getAccessToken(config: FedExConfig): Promise<string> {
 export async function callFedEx(path: string, payload: unknown): Promise<unknown> {
   const config = getFedExConfig();
   const token = await getAccessToken(config);
-  const response = await fetch(`${FEDEX_SANDBOX_URL}${path}`, {
+  const response = await fetch(`${config.baseUrl}${path}`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -135,8 +160,127 @@ export async function callFedEx(path: string, payload: unknown): Promise<unknown
     const message = stringValue(firstError?.message);
     throw new Error(message || `FedEx request failed (${response.status}).`);
   }
-
   return result;
+}
+
+export function getFedExAccountNumber(): string {
+  return getFedExConfig().accountNumber;
+}
+
+export function isProductionLabelEnabled(): boolean {
+  return process.env.FEDEX_PRODUCTION_ENABLED === "true" &&
+    process.env.FEDEX_PRODUCTION_LABELS_ENABLED === "true";
+}
+
+export function isProductionLabelUserAllowed(userId: string): boolean {
+  const allowedIds = (process.env.FEDEX_PRODUCTION_ALLOWED_USER_IDS || "")
+    .split(",")
+    .map((id) => id.trim())
+    .filter(Boolean);
+  return allowedIds.includes(userId);
+}
+
+export async function reserveProductionLabel(
+  userId: string,
+  idempotencyKey: string,
+  shipmentReference: string
+): Promise<void> {
+  let supabase;
+  try {
+    supabase = await getSessionClient();
+  } catch (error) {
+    console.error(
+      "FedEx label ledger configuration unavailable:",
+      error instanceof Error ? error.message : "Unknown configuration error."
+    );
+    throw new FedExConfigurationError(
+      "Production labels require the Supabase shipment-ledger migration."
+    );
+  }
+
+  const { data: authData, error: authError } = await supabase.auth.getUser();
+  if (authError || !authData.user || authData.user.id !== userId) {
+    throw new FedExConfigurationError("Unable to verify authorization for a production label.");
+  }
+
+  const { error } = await supabase.from("fedex_shipments").insert({
+    owner_user_id: userId,
+    idempotency_key: idempotencyKey,
+    shipment_reference: shipmentReference,
+    status: "pending",
+  });
+
+  if (error?.code === "23505") {
+    throw new FedExLabelConflictError(
+      "This shipment reference or label request was already used. Check its tracking status or reconcile it before creating another label."
+    );
+  }
+  if (error) {
+    console.error("FedEx label ledger reservation failed:", error.message);
+    throw new FedExConfigurationError(
+      "Could not reserve a production label safely. Verify the shipment-ledger migration and retry."
+    );
+  }
+}
+
+export async function finalizeProductionLabel(
+  idempotencyKey: string,
+  trackingNumber: string
+): Promise<void> {
+  const supabase = await getSessionClient();
+  const { data, error } = await supabase.auth.getUser();
+  if (error || !data.user) {
+    throw new FedExConfigurationError(
+      "FedEx created a label, but the result could not be securely recorded. Contact support before retrying."
+    );
+  }
+
+  const { error: updateError } = await supabase
+    .from("fedex_shipments")
+    .update({
+      status: "submitted",
+      tracking_number: trackingNumber,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("owner_user_id", data.user.id)
+    .eq("idempotency_key", idempotencyKey);
+
+  if (updateError) {
+    console.error("FedEx label result persistence failed:", updateError.message);
+    throw new FedExConfigurationError(
+      "FedEx may have created the label, but its result could not be recorded. Contact support before retrying."
+    );
+  }
+}
+
+export async function markProductionLabelUnknown(
+  idempotencyKey: string
+): Promise<void> {
+  let supabase;
+  try {
+    supabase = await getSessionClient();
+  } catch (error) {
+    console.error(
+      "FedEx label outcome could not be recorded:",
+      error instanceof Error ? error.message : "Supabase configuration unavailable."
+    );
+    return;
+  }
+  const { data, error } = await supabase.auth.getUser();
+  if (error || !data.user) {
+    console.error("Unable to verify user while recording an unknown FedEx label outcome.");
+    return;
+  }
+
+  const { error: updateError } = await supabase
+    .from("fedex_shipments")
+    .update({ status: "unknown", updated_at: new Date().toISOString() })
+    .eq("owner_user_id", data.user.id)
+    .eq("idempotency_key", idempotencyKey);
+
+  if (updateError) {
+    console.error("FedEx unknown label outcome persistence failed:", updateError.message);
+  }
 }
 
 function readText(
@@ -238,7 +382,10 @@ export function packageLineItem(shipment: ParsedShipment) {
   };
 }
 
-export async function requireShippingUser(): Promise<Response | undefined> {
+export async function getShippingUserId(): Promise<{
+  userId?: string;
+  response?: Response;
+}> {
   let supabase;
   try {
     supabase = await getSessionClient();
@@ -247,23 +394,38 @@ export async function requireShippingUser(): Promise<Response | undefined> {
       "Shipping authentication configuration unavailable:",
       error instanceof Error ? error.message : "Unknown configuration error."
     );
-    return Response.json(
-      { error: "Shipping authentication is not configured." },
-      { status: 503 }
-    );
+    return {
+      response: Response.json(
+        { error: "Shipping authentication is not configured." },
+        { status: 503 }
+      ),
+    };
   }
 
   const { data, error } = await supabase.auth.getUser();
   if (error) {
     console.error("Shipping authentication check failed:", error.message);
-    return Response.json(
-      { error: "Unable to verify your sign-in." },
-      { status: 503 }
-    );
+    return {
+      response: Response.json(
+        { error: "Unable to verify your sign-in." },
+        { status: 503 }
+      ),
+    };
   }
   if (!data.user) {
-    return Response.json({ error: "Sign in to use shipping tools." }, { status: 401 });
+    return {
+      response: Response.json(
+        { error: "Sign in to use shipping tools." },
+        { status: 401 }
+      ),
+    };
   }
+  return { userId: data.user.id };
+}
+
+export async function requireShippingUser(): Promise<Response | undefined> {
+  const { response } = await getShippingUserId();
+  return response;
 }
 
 export function errorResponse(error: unknown): Response {
@@ -271,6 +433,6 @@ export function errorResponse(error: unknown): Response {
     return Response.json({ error: error.message }, { status: 503 });
   }
   const message = error instanceof Error ? error.message : "FedEx request failed.";
-  console.error("FedEx sandbox request failed:", message);
+  console.error("FedEx API request failed:", message);
   return Response.json({ error: message }, { status: 502 });
 }

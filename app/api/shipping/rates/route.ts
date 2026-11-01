@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   callFedEx,
   errorResponse,
+  getFedExAccountNumber,
   FedExInputError,
   packageLineItem,
   parseShipment,
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest) {
   try {
     const shipment = parseShipment(body);
     const response = await callFedEx("/rate/v1/rates/quotes", {
-      accountNumber: { value: process.env.FEDEX_ACCOUNT_NUMBER?.trim() },
+      accountNumber: { value: getFedExAccountNumber() },
       requestedShipment: {
         shipper: { address: shipment.shipper.address },
         recipient: { address: shipment.recipient.address },

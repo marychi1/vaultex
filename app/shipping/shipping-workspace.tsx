@@ -28,6 +28,8 @@ type Rate = {
   currency: string;
 };
 
+type ShippingMode = "sandbox" | "production";
+
 const initialForm: FormValues = {
   senderName: "",
   senderPhone: "",
@@ -100,11 +102,19 @@ function Field({
   );
 }
 
-export default function ShippingWorkspace() {
+export default function ShippingWorkspace({
+  mode,
+  productionLabelsEnabled,
+}: {
+  mode: ShippingMode;
+  productionLabelsEnabled: boolean;
+}) {
   const [form, setForm] = useState(initialForm);
   const [rates, setRates] = useState<Rate[]>([]);
   const [selectedService, setSelectedService] = useState("");
   const [trackingNumber, setTrackingNumber] = useState("");
+  const [shipmentReference, setShipmentReference] = useState("");
+  const [productionConfirmation, setProductionConfirmation] = useState("");
   const [trackingResult, setTrackingResult] = useState<{
     status: string;
     events: { date: string; description: string; city: string; state: string }[];
@@ -142,7 +152,11 @@ export default function ShippingWorkspace() {
       const { data } = await submitJson("/api/shipping/rates", toShipment(form));
       const result = Array.isArray(data.rates) ? data.rates as Rate[] : [];
       setRates(result);
-      setMessage(result.length ? "Sandbox rates are ready." : "FedEx returned no rate options for these details.");
+      setMessage(
+        result.length
+          ? `${mode === "production" ? "Production" : "Sandbox"} rates are ready.`
+          : "FedEx returned no rate options for these details."
+      );
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not retrieve rates.");
     } finally {
@@ -152,7 +166,15 @@ export default function ShippingWorkspace() {
 
   async function createLabel() {
     if (!selectedService) {
-      setMessage("Get rates and choose a service before creating a sandbox label.");
+      setMessage("Get rates and choose a service before creating a label.");
+      return;
+    }
+    if (mode === "production" && !productionLabelsEnabled) {
+      setMessage("Production label creation is disabled.");
+      return;
+    }
+    if (mode === "production" && productionConfirmation !== "CREATE LABEL") {
+      setMessage('Type "CREATE LABEL" to confirm a real, billable shipment.');
       return;
     }
     setBusy(true);
@@ -160,8 +182,16 @@ export default function ShippingWorkspace() {
     try {
       const response = await fetch("/api/shipping/labels", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...toShipment(form), serviceType: selectedService }),
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": crypto.randomUUID(),
+        },
+        body: JSON.stringify({
+          ...toShipment(form),
+          serviceType: selectedService,
+          shipmentReference,
+          productionConfirmation,
+        }),
       });
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
@@ -172,13 +202,18 @@ export default function ShippingWorkspace() {
       const objectUrl = URL.createObjectURL(await response.blob());
       const link = document.createElement("a");
       link.href = objectUrl;
-      link.download = "fedex-sandbox-label.pdf";
+      link.download = `fedex-${mode}-label.pdf`;
       link.click();
       window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
       if (tracking) setTrackingNumber(tracking);
-      setMessage(tracking ? `Sandbox label downloaded. Tracking: ${tracking}` : "Sandbox label downloaded.");
+      setMessage(
+        tracking
+          ? `${mode === "production" ? "Production" : "Sandbox"} label downloaded. Tracking: ${tracking}`
+          : `${mode === "production" ? "Production" : "Sandbox"} label downloaded.`
+      );
+      setProductionConfirmation("");
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Could not create a sandbox label.");
+      setMessage(error instanceof Error ? error.message : "Could not create a shipping label.");
     } finally {
       setBusy(false);
     }
@@ -195,7 +230,7 @@ export default function ShippingWorkspace() {
         status: typeof data.status === "string" ? data.status : "Status unavailable",
         events: Array.isArray(data.events) ? data.events as TrackingEvent[] : [],
       });
-      setMessage("Sandbox tracking information loaded.");
+      setMessage(`${mode === "production" ? "Production" : "Sandbox"} tracking information loaded.`);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not retrieve tracking information.");
     } finally {
@@ -207,7 +242,10 @@ export default function ShippingWorkspace() {
     <div className="shipping-workspace">
       <form className="shipping-card" onSubmit={getRates}>
         <h2>Get rates and create a label</h2>
-        <p>US domestic parcels only. Enter sender, recipient, and package details.</p>
+        <p>
+          US domestic parcels only. Enter sender, recipient, and package details.
+          Rates, labels, and tracking are separate from bank wires.
+        </p>
         <div className="shipping-columns">
           <fieldset>
             <legend>Sender</legend>
@@ -242,7 +280,7 @@ export default function ShippingWorkspace() {
           </div>
         </fieldset>
         <button className="cta" disabled={busy} type="submit">
-          {busy ? "Working..." : "GET SANDBOX RATES"}
+          {busy ? "Working..." : `GET ${mode === "production" ? "PRODUCTION" : "SANDBOX"} RATES`}
         </button>
         {rates.length > 0 && (
           <div className="shipping-rate-list">
@@ -260,12 +298,48 @@ export default function ShippingWorkspace() {
                 ))}
               </select>
             </label>
-            <button className="secondary" disabled={busy || !selectedService} type="button" onClick={createLabel}>
-              CREATE SANDBOX LABEL
+            {mode === "production" && (
+              <>
+                <Field
+                  label="Unique order/shipment reference"
+                  value={shipmentReference}
+                  onChange={setShipmentReference}
+                  required
+                />
+                <Field
+                  label='Type "CREATE LABEL" to authorize real carrier charges'
+                  value={productionConfirmation}
+                  onChange={setProductionConfirmation}
+                  required
+                />
+              </>
+            )}
+            <button
+              className="secondary"
+              disabled={
+                busy ||
+                !selectedService ||
+                (mode === "production" &&
+                  (!productionLabelsEnabled ||
+                    !shipmentReference ||
+                    productionConfirmation !== "CREATE LABEL"))
+              }
+              type="button"
+              onClick={createLabel}
+            >
+              {mode === "production" ? "CREATE BILLABLE LABEL" : "CREATE SANDBOX LABEL"}
             </button>
           </div>
         )}
       </form>
+
+      {mode === "production" && (
+        <p className="shipping-warning">
+          High-value shipments: this app does not set declared value or arrange insurance.
+          A $50,000 item requires FedEx confirmation of service eligibility, declared-value
+          limits, packaging rules, and coverage before a label is created.
+        </p>
+      )}
 
       <form className="shipping-card" onSubmit={trackShipment}>
         <h2>Track a parcel</h2>

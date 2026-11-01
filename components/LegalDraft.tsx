@@ -31,10 +31,11 @@ export default function LegalDraft({
         </p>
         {shippingDisclosure && (
           <p>
-            The separate FedEx shipping workspace is sandbox-only. If used, sender and
-            recipient names, phone numbers, addresses, and package details are sent to
-            FedEx sandbox services to request rates, create test labels, and retrieve
-            tracking details. Production shipping is not enabled.
+            If the FedEx shipping workspace is used, sender and recipient names, phone
+            numbers, addresses, package details, and tracking numbers are sent to FedEx
+            in the environment configured for the service. Sandbox is the default.
+            Production access and billable labels require separate configuration and
+            authorized-user controls.
           </p>
         )}
         <Link className="secondary" href="/wire-transfers">Wire service status</Link>
