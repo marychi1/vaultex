@@ -2,6 +2,7 @@ import Link from 'next/link'
 
 const LINKS = [
   ['Bank wires', '/wire-transfers'],
+  ['FedEx shipping', '/shipping'],
   ['Support', '/support'],
   ['Legal', '/legal'],
   ['Dashboard', '/dashboard'],
@@ -22,14 +23,17 @@ export default function Home() {
       </header>
 
       <section className="hero">
-        <p className="eyebrow">Bank wire transfers</p>
-        <h1>Focused on domestic and international bank wires.</h1>
+        <p className="eyebrow">Bank wires and parcel shipping</p>
+        <h1>Bank wires and parcel shipping, in separate workflows.</h1>
         <p>
-          VAULTEX is being narrowed to bank transfers only. The customer app is not yet
-          connected to a live, customer-authorized wire workflow. Do not use it to initiate
-          or rely on a transfer.
+          Bank-wire service information is provided separately from parcel shipping.
+          The app is not connected to a live, customer-authorized wire workflow. Do not
+          use it to initiate or rely on a bank transfer.
         </p>
-        <p>Crypto, wallets, cards, and blockchain services are not offered.</p>
+        <p>
+          Parcel shipping is a separate FedEx sandbox feature and is not part of
+          bank-wire payments. Crypto, wallets, cards, and blockchain services are not offered.
+        </p>
         <div className="actions">
           <Link className="cta" href="/wire-transfers">VIEW SERVICE STATUS</Link>
           <Link className="secondary" href="/support">SUPPORT</Link>
@@ -52,6 +56,16 @@ export default function Home() {
           </p>
           <span className="tag">Not confirmed</span>
         </article>
+      </section>
+
+      <section className="section install-section">
+        <div className="install-card">
+          <div>
+            <h2>FedEx parcel shipping</h2>
+            <p>Sandbox-only rate quotes, label testing, and tracking, separate from bank wires.</p>
+          </div>
+          <Link className="secondary" href="/shipping">OPEN SHIPPING TOOLS</Link>
+        </div>
       </section>
 
       <footer className="footer">

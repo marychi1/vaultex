@@ -1,6 +1,12 @@
 import Link from 'next/link'
 
-export default function LegalDraft({ title }: { title: string }) {
+export default function LegalDraft({
+  title,
+  shippingDisclosure = false,
+}: {
+  title: string
+  shippingDisclosure?: boolean
+}) {
   return (
     <main className="page">
       <header className="nav">
@@ -23,6 +29,14 @@ export default function LegalDraft({ title }: { title: string }) {
           based on the actual operating entity, supported jurisdictions, Column services,
           fees, customer-data flows, and applicable requirements.
         </p>
+        {shippingDisclosure && (
+          <p>
+            The separate FedEx shipping workspace is sandbox-only. If used, sender and
+            recipient names, phone numbers, addresses, and package details are sent to
+            FedEx sandbox services to request rates, create test labels, and retrieve
+            tracking details. Production shipping is not enabled.
+          </p>
+        )}
         <Link className="secondary" href="/wire-transfers">Wire service status</Link>
       </section>
     </main>
