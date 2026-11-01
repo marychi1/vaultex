@@ -2,12 +2,12 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'VAULTEX',
-  description: 'Manage your digital assets. Early access.',
-  keywords: 'crypto wallet, DeFi, token swap, virtual card, Bitcoin, Ethereum',
+  title: 'VAULTEX | Bank wires',
+  description: 'VAULTEX is focused on domestic and international bank wires. Transfers are not currently available in this app.',
+  keywords: 'bank wire transfers',
   manifest: '/manifest.json',
   appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'VAULTEX' },
-  openGraph: { title: 'VAULTEX', description: 'Manage your digital assets. Early access.', type: 'website' },
+  openGraph: { title: 'VAULTEX | Bank wires', description: 'Bank-wire service status and availability.', type: 'website' },
 }
 
 export const viewport: Viewport = {

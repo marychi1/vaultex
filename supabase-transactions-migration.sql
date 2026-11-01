@@ -1,5 +1,5 @@
--- Apply in the Supabase SQL Editor before deploying customer transaction history.
--- Transaction writes must come from trusted server-side provider webhooks.
+-- Historical migration for previous provider-recorded card/crypto activity.
+-- Do not apply for the bank-wire-only product. These records are not Column wires.
 
 create table if not exists public.transactions (
   id                 uuid primary key default gen_random_uuid(),

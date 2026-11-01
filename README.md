@@ -1,42 +1,22 @@
-# VAULTEX
+# VAULTEX customer app
 
-VAULTEX is an early-stage Next.js App Router application for digital-asset
-services. The current application includes Supabase email-link sign-in, legal
-and support pages, and UI prototypes for several planned services. A page or
-demo UI does not imply that a financial service is operational.
+VAULTEX is being narrowed to domestic and international bank wires. This Next.js app currently provides product-scope and service-status information only. It is not connected to an authenticated Column wire workflow; no transfer can be initiated or tracked here.
 
-## Current status
+Crypto, wallets, blockchain features, cards, and onramps are not offered. Old data/schema is not automatically deleted as part of this UI conversion.
 
-- Email-link sign-in and the protected dashboard require a configured Supabase
-  project.
-- Buy Crypto is a coming-soon placeholder.
-- Wallet creation, swaps, yield products, and identity verification are not
-  implemented as production services.
-- Card issuance and management are disabled until identity verification,
-  account ownership controls, and card-program approval are implemented.
-- The dashboard can display provider-recorded transaction rows and individual
-  receipts after the transaction schema migration is applied. The current Stripe
-  webhook writes card activity only; Column wires and bank delivery are not
-  connected to this customer app.
-- Support chat and ticket submission are UI-only and do not send requests to a
-  support system.
+## Current limitations
 
-Do not use this application to handle real customer funds or sensitive identity
-documents until the relevant integrations, authorization, data policies, and
-compliance controls have been implemented and independently verified.
-
-## Requirements
-
-- Node.js 22 (or a supported Node.js release compatible with the installed
-  Next.js version)
-- npm
-- A Supabase project for authentication
+- The customer app uses Supabase email-link authentication; it is not integrated with the separate Vaultexw backend identity.
+- The backend currently models USD wires. International countries, currencies, beneficiary requirements, fees, FX, and delivery times have not been confirmed with Column.
+- The legal and compliance pages are drafts, not operative policies or agreements. Qualified review and approved customer disclosures are required before launch.
+- Do not use this app to submit payment instructions, identity documents, or sensitive account details.
+- Previous receipt records, if present, represent provider-recorded card or crypto activity—not Column bank wires—and are not displayed as wire history.
 
 ## Local development
 
+Requirements: Node.js 22+ and npm.
+
 ```powershell
-git clone https://github.com/marychi1/vaultex.git
-cd vaultex
 npm ci
 Copy-Item .env.example .env.local
 npm run dev
@@ -45,35 +25,8 @@ npm run dev
 Open [http://localhost:3000](http://localhost:3000).
 
 Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in
-`.env.local` to enable email sign-in. Configure the Supabase authentication
-provider and redirect URL to include `http://localhost:3000/auth/callback`.
-Without these values, sign-in and the protected dashboard are unavailable.
-
-Never commit `.env.local`, production credentials, or a Supabase service-role
-key. Keep `SUPABASE_SERVICE_ROLE_KEY` server-side and use it only for a
-server-authorized operation.
-
-For an existing Supabase project, review and apply
-[`supabase-security-migration.sql`](./supabase-security-migration.sql) before
-deploying. It replaces the prior permissive card/push-subscription policies
-with user-scoped access. Existing rows are left unowned and remain inaccessible
-until an administrator verifies their owner; do not bulk-assign them based on
-wallet addresses supplied by clients.
-
-Before deploying customer transaction history, apply
-[`supabase-transactions-migration.sql`](./supabase-transactions-migration.sql).
-It scopes reads to the authenticated owner, blocks direct client writes, and
-adds unique provider-event IDs for webhook idempotency. Provider webhooks must
-use the server-side service-role key.
-
-## Optional integrations
-
-See [.env.example](./.env.example) for the environment variable names currently
-read by the application. Stripe, MoonPay, and Google Analytics values are
-optional for local development. Configuring their credentials alone does not
-make the related user flows production-ready; review the current-status notes
-and complete the required API authorization, provider setup, data policies,
-failure handling, and end-to-end tests first.
+`.env.local` only when testing email-link authentication. Never commit
+`.env.local`, production credentials, or a Supabase service-role key.
 
 ## Checks
 
@@ -83,14 +36,4 @@ npm run typecheck
 npm run build
 ```
 
-Pull requests run the same checks in GitHub Actions. The `main` branch is
-protected by a repository ruleset that requires pull requests and the CI
-quality-check job.
-
-## Deployment
-
-Deploy only after the required integrations, secrets, Supabase schema and
-row-level security policies, provider webhooks, and production environment
-variables have been reviewed. Configure the deployed application's Supabase
-authentication redirect URLs to match the production domain. The current app
-is not a production-ready financial product.
+Do not deploy as a functioning wire-transfer product until Column capabilities and the authenticated customer-to-backend identity design are confirmed, tested, and reviewed. Existing database records are intentionally not deleted or reclassified by this UI change.
