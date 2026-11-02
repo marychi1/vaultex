@@ -54,7 +54,15 @@ export async function POST(request: NextRequest) {
 
     if (mode === "production") {
       if (!isProductionLabelEnabled()) {
-        return NextResponse.json({ error: "Production label creation is disabled." }, { status: 503 });
+        return NextResponse.json({
+          error: "Production label creation is disabled until FedEx confirms declared-value eligibility and limits for the selected service and account.",
+        }, { status: 503 });
+      }
+      if (shipment.package.declaredValue === undefined) {
+        return NextResponse.json(
+          { error: "A declared USD package value is required for production labels." },
+          { status: 400 }
+        );
       }
       if (!isProductionLabelUserAllowed(userId)) {
         return NextResponse.json({ error: "Your account is not authorized to create production labels." }, { status: 403 });

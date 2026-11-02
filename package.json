@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test:fedex": "node --experimental-strip-types --test lib/fedex/declared-value.test.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

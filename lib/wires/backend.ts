@@ -1,4 +1,5 @@
 import { getSessionClient } from "@/lib/supabase/server";
+import { getConfiguredWireBackendUrl } from "@/lib/wires/backend-url";
 
 type BackendSessionResult =
   | { ok: true; accessToken: string; backendUrl: string }
@@ -34,19 +35,19 @@ export async function getWireBackendSession(): Promise<BackendSessionResult> {
       };
     }
 
-    const backendUrl = process.env.VAULTEX_BACKEND_URL?.trim();
+    const backendUrl = getConfiguredWireBackendUrl();
     if (!backendUrl) {
       return {
         ok: false,
         status: 503,
-        message: "Wire account linking is not configured.",
+        message: "Wire account-linking backend is not configured with a safe URL.",
       };
     }
 
     return {
       ok: true,
       accessToken: session.access_token,
-      backendUrl: backendUrl.replace(/\/$/, ""),
+      backendUrl,
     };
   } catch (error) {
     console.error("Wire customer session verification failed:", error);
