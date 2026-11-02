@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next'
+import EnvironmentBanner from '@/components/EnvironmentBanner'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: '#00F0FF',
+  themeColor: '#17392E',
   width: 'device-width',
   initialScale: 1,
 }
@@ -25,7 +26,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </head>
-      <body>{children}</body>
+      <body>
+        <EnvironmentBanner />
+        {children}
+      </body>
     </html>
   )
 }

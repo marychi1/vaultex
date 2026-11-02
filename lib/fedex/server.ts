@@ -1,4 +1,9 @@
 import { getSessionClient } from "@/lib/supabase/server";
+import {
+  DeclaredValueInputError,
+  declaredValueRequestField,
+  parseDeclaredValue,
+} from "./declared-value";
 
 const FEDEX_URLS = {
   sandbox: "https://apis-sandbox.fedex.com",
@@ -8,6 +13,8 @@ const FEDEX_URLS = {
 export class FedExConfigurationError extends Error {}
 export class FedExInputError extends Error {}
 export class FedExLabelConflictError extends Error {}
+
+const PRODUCTION_DECLARED_VALUE_REQUIREMENTS_VERIFIED = false;
 
 type FedExConfig = {
   mode: "sandbox" | "production";
@@ -38,6 +45,7 @@ export type ParsedShipment = {
     length: number;
     width: number;
     height: number;
+    declaredValue?: number;
   };
 };
 
@@ -168,7 +176,8 @@ export function getFedExAccountNumber(): string {
 }
 
 export function isProductionLabelEnabled(): boolean {
-  return process.env.FEDEX_PRODUCTION_ENABLED === "true" &&
+  return PRODUCTION_DECLARED_VALUE_REQUIREMENTS_VERIFIED &&
+    process.env.FEDEX_PRODUCTION_ENABLED === "true" &&
     process.env.FEDEX_PRODUCTION_LABELS_ENABLED === "true";
 }
 
@@ -357,6 +366,15 @@ export function parseShipment(input: unknown): ParsedShipment {
   const recipient = parseContactAddress(record.recipient, "Recipient");
   const packageInput = asRecord(record.package);
   if (!packageInput) throw new FedExInputError("Package details are required.");
+  let declaredValue: number | undefined;
+  try {
+    declaredValue = parseDeclaredValue(packageInput.declaredValue);
+  } catch (error) {
+    if (error instanceof DeclaredValueInputError) {
+      throw new FedExInputError(error.message);
+    }
+    throw error;
+  }
 
   return {
     shipper,
@@ -366,12 +384,14 @@ export function parseShipment(input: unknown): ParsedShipment {
       length: readDimension(packageInput, "length", "Length in inches", 108),
       width: readDimension(packageInput, "width", "Width in inches", 108),
       height: readDimension(packageInput, "height", "Height in inches", 108),
+      declaredValue,
     },
   };
 }
 
 export function packageLineItem(shipment: ParsedShipment) {
   return {
+    ...declaredValueRequestField(shipment.package.declaredValue),
     weight: { units: "LB", value: shipment.package.weight },
     dimensions: {
       length: shipment.package.length,

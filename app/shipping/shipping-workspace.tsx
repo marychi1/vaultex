@@ -19,6 +19,7 @@ type FormValues = {
   length: string;
   width: string;
   height: string;
+  declaredValue: string;
 };
 
 type Rate = {
@@ -47,6 +48,7 @@ const initialForm: FormValues = {
   length: "12",
   width: "9",
   height: "4",
+  declaredValue: "",
 };
 
 function toShipment(form: FormValues) {
@@ -72,6 +74,7 @@ function toShipment(form: FormValues) {
       length: form.length,
       width: form.width,
       height: form.height,
+      ...(form.declaredValue.trim() ? { declaredValue: form.declaredValue.trim() } : {}),
     },
   };
 }
@@ -81,12 +84,14 @@ function Field({
   value,
   onChange,
   type = "text",
+  step,
   required = true,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   type?: string;
+  step?: string;
   required?: boolean;
 }) {
   return (
@@ -94,6 +99,7 @@ function Field({
       <span>{label}</span>
       <input
         type={type}
+        step={step}
         value={value}
         onChange={(event) => onChange(event.target.value)}
         required={required}
@@ -277,6 +283,14 @@ export default function ShippingWorkspace({
             <Field label="Length (in)" type="number" value={form.length} onChange={(v) => update("length", v)} />
             <Field label="Width (in)" type="number" value={form.width} onChange={(v) => update("width", v)} />
             <Field label="Height (in)" type="number" value={form.height} onChange={(v) => update("height", v)} />
+            <Field
+              label={`Declared value (USD${mode === "production" ? "" : ", optional"}; not insurance)`}
+              type="number"
+              step="0.01"
+              value={form.declaredValue}
+              onChange={(v) => update("declaredValue", v)}
+              required={mode === "production"}
+            />
           </div>
         </fieldset>
         <button className="cta" disabled={busy} type="submit">
@@ -285,7 +299,7 @@ export default function ShippingWorkspace({
         {rates.length > 0 && (
           <div className="shipping-rate-list">
             <label className="shipping-field">
-              <span>Select service for sandbox label</span>
+              <span>Select service for {mode === "production" ? "production" : "sandbox"} label</span>
               <select value={selectedService} onChange={(event) => setSelectedService(event.target.value)}>
                 <option value="">Choose a service</option>
                 {rates.map((rate) => (
@@ -335,9 +349,9 @@ export default function ShippingWorkspace({
 
       {mode === "production" && (
         <p className="shipping-warning">
-          High-value shipments: this app does not set declared value or arrange insurance.
-          A $50,000 item requires FedEx confirmation of service eligibility, declared-value
-          limits, packaging rules, and coverage before a label is created.
+          Declared value is sent per package in the FedEx shipment request; it is not
+          insurance or a guarantee of reimbursement. FedEx may apply service-specific
+          limits. Production labels remain disabled until those requirements are verified.
         </p>
       )}
 
