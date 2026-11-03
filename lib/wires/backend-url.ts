@@ -1,6 +1,11 @@
 export function getConfiguredWireBackendUrl(): string | null {
-  const rawUrl = process.env.VAULTEX_BACKEND_URL?.trim() ||
-    (process.env.NODE_ENV === "development" ? "http://localhost:3002" : "");
+  const configuredUrl = process.env.VAULTEX_BACKEND_URL?.trim();
+  const defaultUrl = process.env.NODE_ENV === "development"
+    ? "http://localhost:3002"
+    : process.env.NODE_ENV === "production"
+      ? "https://api.vaultexwallet.io"
+      : "";
+  const rawUrl = configuredUrl || defaultUrl;
   if (!rawUrl) return null;
 
   try {
