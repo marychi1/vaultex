@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test:fedex": "node --experimental-strip-types --test lib/fedex/declared-value.test.mjs",
+    "test:wires-config": "node --experimental-strip-types --test lib/wires/backend-url.test.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
