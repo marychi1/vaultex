@@ -7,6 +7,7 @@ Crypto, wallets, blockchain features, cards, and onramps are not offered. Old da
 ## Current limitations
 
 - Account linking requires a confirmed Supabase email, the existing backend phone number and PIN, and a one-time phone code. The backend verifies the Supabase access token and stores a unique mapping in PostgreSQL.
+- Beneficiary creation is available only in an explicitly enabled non-production Column test environment. Do not enter real bank information there; production wire transfers remain unavailable.
 - Set the server-only `VAULTEX_BACKEND_URL` to the staging backend to test account linking. Configure the backend with `SUPABASE_URL`, `SUPABASE_ANON_KEY`, PostgreSQL, and a phone OTP provider before testing; do not use production identity data for sandbox tests.
 - FedEx shipping supports US domestic rate quotes, single-package labels, and tracking lookups. Sandbox is the default; production API access and billable labels are separately gated.
 - FedEx sandbox credentials must be stored as server-side environment variables. Never use a `NEXT_PUBLIC_` prefix for FedEx credentials or commit them to the repository.
