@@ -33,8 +33,8 @@ export default async function ShippingPage() {
       <h1>Shipping tools</h1>
       {mode === "sandbox" ? (
         <p className="shipping-warning">
-          Sandbox only. FedEx rates, labels, and tracking are separate from bank wires.
-          No production labels or live carrier charges can be created here.
+          Test environment only. FedEx rates, labels, and tracking are separate from bank wires.
+          No production shipments or live carrier charges can be created here.
         </p>
       ) : (
         <p className="shipping-warning">
