@@ -75,7 +75,7 @@ export default function LinkAccountForm() {
       const result = await post("/api/wires/link-account", { phone, pin, code });
       setMessage(
         result.linked
-          ? `Account linked (${result.phone}). Wire transfers are still unavailable pending Column sandbox setup and testing.`
+          ? `Account linked (${result.phone}). Wire transfers are still unavailable pending provider configuration and verification.`
           : "Account linking could not be confirmed."
       );
       setLinked(Boolean(result.linked));
@@ -94,7 +94,7 @@ export default function LinkAccountForm() {
       {linked && (
         <div className="shipping-card">
           <h2>Existing account linked</h2>
-          <p>Wire submission and tracking remain unavailable pending Column sandbox setup and testing.</p>
+          <p>Wire submission and tracking remain unavailable pending provider configuration and verification.</p>
         </div>
       )}
       {!checking && !linked && (
