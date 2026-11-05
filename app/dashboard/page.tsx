@@ -4,10 +4,30 @@ import { getSessionClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
+type TransferTracking = {
+  id: string;
+  transfer_reference: string;
+  amount_minor: number;
+  currency: string;
+  funding_source: string;
+  destination_label: string;
+  recipient_label: string;
+  provider_status: string;
+  recipient_status: string;
+  status_note: string;
+  created_at: string;
+};
+
 export default async function DashboardPage() {
   const supabase = await getSessionClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  const { data: transfers, error } = await supabase
+    .from("transfer_tracking")
+    .select("id, transfer_reference, amount_minor, currency, funding_source, destination_label, recipient_label, provider_status, recipient_status, status_note, created_at")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false }) as { data: TransferTracking[] | null; error: unknown };
 
   return (
     <main className="page dashboard-page">
@@ -18,6 +38,34 @@ export default async function DashboardPage() {
       <p className="eyebrow">Your account</p>
       <h1>Welcome to VAULTEX</h1>
       <p className="dashboard-email">Signed in as {user.email}</p>
+
+      <section className="card dashboard-service-card" aria-labelledby="tracked-transfers">
+        <p className="eyebrow">Payment reconciliation</p>
+        <h2 id="tracked-transfers">Tracked transfers</h2>
+        {error ? (
+          <p role="status">Transfer tracking is temporarily unavailable. Please refresh later.</p>
+        ) : transfers && transfers.length > 0 ? (
+          <div className="dashboard-transfer-list">
+            {transfers.map((transfer) => (
+              <article key={transfer.id} className="dashboard-transfer-item">
+                <div className="dashboard-transfer-heading">
+                  <strong>{transfer.transfer_reference}</strong>
+                  <strong>{new Intl.NumberFormat("en-US", { style: "currency", currency: transfer.currency }).format(transfer.amount_minor / 100)}</strong>
+                </div>
+                <p><strong>Funding:</strong> {transfer.funding_source}</p>
+                <p><strong>Route:</strong> {transfer.destination_label}</p>
+                <p><strong>Recipient:</strong> {transfer.recipient_label}</p>
+                <p><strong>Remitly status:</strong> {transfer.provider_status.replaceAll("_", " ")}</p>
+                <p><strong>Recipient status:</strong> {transfer.recipient_status}</p>
+                <p>{transfer.status_note}</p>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <p>No transfers are currently being tracked.</p>
+        )}
+      </section>
+
       <div className="dashboard-service-grid">
         <section className="card dashboard-service-card" aria-labelledby="wire-status">
           <span className="badge">01</span><h2 id="wire-status">Bank-wire services</h2>
