@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
+import BeneficiaryManager from "./beneficiary-manager";
 
 type ApiResult = { error?: string; message?: string; linked?: boolean; phone?: string };
 
@@ -92,10 +93,13 @@ export default function LinkAccountForm() {
     <div className="shipping-workspace">
       {checking && <p role="status">Checking account-link status...</p>}
       {linked && (
-        <div className="shipping-card">
-          <h2>Existing account linked</h2>
-          <p>Wire submission and tracking remain unavailable pending Column sandbox setup and testing.</p>
-        </div>
+        <>
+          <div className="shipping-card">
+            <h2>Existing account linked</h2>
+            <p>Wire submission and tracking remain unavailable pending Column sandbox setup and testing.</p>
+          </div>
+          <BeneficiaryManager />
+        </>
       )}
       {!checking && !linked && (
       <form className="shipping-card" onSubmit={linkAccount}>
