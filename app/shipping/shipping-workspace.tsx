@@ -201,7 +201,7 @@ export default function ShippingWorkspace({
       });
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
-        throw new Error(typeof data.error === "string" ? data.error : "Could not create a sandbox label.");
+        throw new Error(typeof data.error === "string" ? data.error : "Could not create a shipping label.");
       }
 
       const tracking = response.headers.get("x-tracking-number");

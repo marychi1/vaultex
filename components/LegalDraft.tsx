@@ -33,7 +33,7 @@ export default function LegalDraft({
           <p>
             If the FedEx shipping workspace is used, sender and recipient names, phone
             numbers, addresses, package details, and tracking numbers are sent to FedEx
-            in the environment configured for the service. Sandbox is the default.
+            in the environment configured for the service. The carrier test environment is the default.
             Production access and billable labels require separate configuration and
             authorized-user controls.
           </p>
