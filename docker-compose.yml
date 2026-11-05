@@ -1,0 +1,28 @@
+services:
+  fedex-app:
+    build:
+      context: .
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:?Set it in .env.local}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY:?Set it in .env.local}
+    env_file:
+      - .env.local
+    environment:
+      NODE_ENV: production
+      FEDEX_ENV: sandbox
+      FEDEX_PRODUCTION_ENABLED: "false"
+      FEDEX_PRODUCTION_LABELS_ENABLED: "false"
+      VAULTEX_BACKEND_URL: https://vaultexw-api-staging.onrender.com
+    ports:
+      - "127.0.0.1:3000:3000"
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s

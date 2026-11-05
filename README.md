@@ -30,14 +30,12 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-The backend listens on port 3002 in local development. Start it separately
-before the customer app; the environment banner and account-link proxy use
-that local origin by default in development. Set
-`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and
-`VAULTEX_BACKEND_URL=http://localhost:3002` in `.env.local` when overriding
-the default or testing against a different backend. Keep
-`VAULTEX_BACKEND_URL` server-side; never add a `NEXT_PUBLIC_` prefix. Never
-commit `.env.local`, production credentials, or a Supabase service-role key.
+The environment banner and account-link proxy use the hosted staging backend
+by default. Set `NEXT_PUBLIC_SUPABASE_URL` and
+`NEXT_PUBLIC_SUPABASE_ANON_KEY` in `.env.local`; set `VAULTEX_BACKEND_URL` to
+another HTTPS backend origin only when needed. Keep `VAULTEX_BACKEND_URL`
+server-side; never add a `NEXT_PUBLIC_` prefix. Never commit `.env.local`,
+production credentials, or a Supabase service-role key.
 
 To test the separate FedEx workspace, set `FEDEX_ENV=sandbox`,
 `FEDEX_API_KEY`, `FEDEX_SECRET_KEY`, and `FEDEX_ACCOUNT_NUMBER` in the
@@ -46,6 +44,26 @@ Developer Portal; do not paste them into chat or expose them to the browser.
 Sign in and open `/shipping` to request US domestic test rates, create a
 sandbox label, or look up a tracking number. Sandbox calls use
 `https://apis-sandbox.fedex.com`.
+
+## Docker FedEx sandbox
+
+Docker runs this customer app; FedEx still handles parcel transportation. The
+Compose service is pinned to FedEx sandbox, binds only to the local machine, and
+keeps production label creation disabled. Add the Supabase public app settings
+and FedEx sandbox credentials to the ignored `.env.local` file first. The
+Docker build excludes all `.env*` files; FedEx credentials are passed only to
+the running container.
+
+```powershell
+docker compose --env-file .env.local up --build -d
+docker compose ps
+```
+
+Open `http://localhost:3000/shipping` and sign in to use sandbox rates, labels,
+and tracking. FedEx credentials must include `FEDEX_ENV=sandbox`,
+`FEDEX_API_KEY`, `FEDEX_SECRET_KEY`, and `FEDEX_ACCOUNT_NUMBER`. Stop the app
+with `docker compose down`. The current local env file has no FedEx credentials,
+so add valid sandbox credentials before requesting FedEx rates or labels.
 
 Production calls use `https://apis.fedex.com` only when `FEDEX_ENV=production`
 and `FEDEX_PRODUCTION_ENABLED=true`. Production label creation has an additional
